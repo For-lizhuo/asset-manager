@@ -2,7 +2,7 @@ import { RouterProvider } from 'react-router-dom'
 import { ConfigProvider } from 'antd-mobile'
 import { router } from './router'
 import zhCN from 'antd-mobile/es/locales/zh-CN'
-import { useAppStore } from './stores/useAppStore'
+import { useAppStore } from './stores'
 import { useEffect } from 'react'
 import './index.css'
 

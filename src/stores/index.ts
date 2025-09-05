@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
-import { assetManagerDB, type Asset, type Holding } from '../utils/indexedDB'
+import { assetManagerDB, type Asset, type Holding } from '../db/indexedDB'
 
 // 应用状态接口
 interface AppState {

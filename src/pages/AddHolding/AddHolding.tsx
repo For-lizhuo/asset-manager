@@ -8,7 +8,8 @@ import {
   Toast,
   Selector
 } from 'antd-mobile'
-import { useAppStore } from '../stores/useAppStore'
+import { useAppStore } from '../../stores'
+import './AddHolding.less'
 
 const AddHolding = () => {
   const navigate = useNavigate()

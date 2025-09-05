@@ -8,12 +8,12 @@ import {
   DownlandOutline,
 } from "antd-mobile-icons";
 import { useNavigate } from "react-router-dom";
-import { useAppStore } from "../stores";
+import { useAppStore } from "../../stores";
 import { useEffect, useState, useRef } from "react";
 import moment from "moment";
-import AssetPieChart from "../components/AssetPieChart";
-import { exportDataToJSON, importDataFromJSON, clearAllData } from "../db/dataExportImport";
-import "../styles/home.less";
+import AssetPieChart from "../../components/AssetPieChart";
+import { exportDataToJSON, importDataFromJSON, clearAllData } from "../../db/dataExportImport";
+import "./home.less";
 
 // 设置moment为中文
 moment.locale("zh-cn");

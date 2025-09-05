@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useLayoutEffect } from 'react'
 import * as echarts from 'echarts'
-import { useAppStore } from '../stores/useAppStore'
+import { useAppStore } from '../../stores'
+import './AssetPieChart.less'
 
 interface PieChartProps {
   height?: number

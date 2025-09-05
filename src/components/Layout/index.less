@@ -1,0 +1,29 @@
+// Layout 组件样式
+.layout-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 60px; // 为底部导航留出空间
+}
+
+.layout-tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border-top: 1px solid #f0f0f0;
+}
+
+// 移动端适配
+@media (max-width: 768px) {
+  .layout-content {
+    padding-bottom: 70px;
+  }
+}

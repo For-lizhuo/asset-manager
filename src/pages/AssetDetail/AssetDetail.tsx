@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, NavBar, Modal, Toast, List } from "antd-mobile";
 import { EditSOutline, DeleteOutline, AddOutline } from "antd-mobile-icons";
-import { useAppStore } from "../stores/useAppStore";
+import { useAppStore } from "../../stores";
 import "./AssetDetail.less";
 
 const AssetDetail = () => {
