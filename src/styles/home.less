@@ -1,0 +1,214 @@
+// 首页样式
+.home-container {
+  .total-asset-card {
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: white;
+    border-radius: 1rem;
+    padding: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+    .total-asset-content {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      .label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .amount-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .amount {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: white;
+        }
+
+        .eye-button {
+          &:hover {
+            opacity: 0.8;
+          }
+
+          &:active {
+            transform: scale(0.95);
+          }
+        }
+      }
+    }
+  }
+
+  .chart-card {
+    background-color: #f9fafb;
+    margin-bottom: 0.75rem;
+  }
+
+  .asset-list-card {
+    background-color: #f9fafb;
+    .adm-card-body{
+      padding: 0.5rem 0;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 2rem 0;
+
+      .empty-text {
+        color: #6b7280;
+        margin-bottom: 1rem;
+      }
+
+      .empty-subtext {
+        color: #9ca3af;
+        font-size: 0.875rem;
+      }
+    }
+
+    .asset-cards-container {
+      margin-top: 0;
+
+      .asset-card {
+        background-color: #ffffff;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+
+        .asset-overview {
+          .asset-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+
+            .asset-info {
+              flex: 1;
+              .progress-text {
+                font-size: 0.75rem;
+                color: #6b7280;
+                text-align: center;
+                height: 1rem;
+                line-height: 1rem;
+              }
+              .asset-title-row {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+
+                h3 {
+                  font-size: 1.1rem;
+                  font-weight: bold;
+                  color: #374151;
+                  margin: 0;
+                }
+
+                .target-tag {
+                  padding: 0.25rem 0.5rem;
+                  font-size: 0.75rem;
+                  border-radius: 9999px;
+                  background-color: #f3f4f6;
+                  color: #6b7280;
+                  font-weight: normal;
+                }
+              }
+
+              .asset-stats {
+                display: flex;
+                align-items: center;
+                gap: 1.5rem;
+
+                .stat-item {
+                  font-size: 0.75rem;
+                  color: #9ca3af;
+                }
+              }
+            }
+
+            .asset-amount {
+              text-align: right;
+              margin-left: 1rem;
+
+              .amount {
+                font-size: 1rem;
+                font-weight: bold;
+                color: #dc2626;
+              }
+            }
+          }
+
+          .progress-section {
+            margin-top: 0.25rem 0;
+
+            .progress-bar-container {
+              width: 100%;
+              height: 6px;
+              background-color: #f3f4f6;
+              border-radius: 3px;
+              overflow: hidden;
+              margin-bottom: 0.5rem;
+
+              .progress-bar {
+                height: 100%;
+                background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+                border-radius: 3px;
+                transition: width 0.3s ease-in-out;
+              }
+            }
+          }
+        }
+
+        .holdings-section {
+          .adm-list-body-inner{
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0;
+          }
+          .holdings-list {
+            // Ant Design Mobile List 组件的样式会自动应用
+          }
+          .adm-list-body {
+            border: none;
+            .adm-list-item {
+              margin: 0;
+              padding: 0.25rem 0;
+              .adm-list-item-content {
+                padding: 0;
+                border: none
+              }
+            }
+          }
+          .adm-list-item-content-main {
+            padding: 0;
+          }
+        }
+
+        .empty-holdings {
+          text-align: center;
+          padding: 1.5rem 0;
+
+          .empty-text {
+            color: #9ca3af;
+          }
+        }
+      }
+    }
+  }
+}
+.adm-list-item-content-arrow{
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+}
+.adm-card-header {
+  padding: 0.5rem 0;
+  .adm-card-header-title{
+    width: 100%;
+  }
+}
+.adm-dialog-content{
+  padding: 0 1rem 1.25rem;
+}
