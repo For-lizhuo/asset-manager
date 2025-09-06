@@ -50,9 +50,25 @@
     margin-bottom: 0.75rem;
   }
 
+  .asset-list-header-button-container {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    .asset-list-header-button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
   .asset-list-card {
     background-color: #f9fafb;
-    .adm-card-body{
+    .adm-card-body {
       padding: 0.5rem 0;
     }
     .empty-state {
@@ -162,7 +178,7 @@
         }
 
         .holdings-section {
-          .adm-list-body-inner{
+          .adm-list-body-inner {
             display: flex;
             flex-direction: column;
             gap: 0.25rem;
@@ -178,7 +194,7 @@
               padding: 0.25rem 0;
               .adm-list-item-content {
                 padding: 0;
-                border: none
+                border: none;
               }
             }
           }
@@ -199,16 +215,16 @@
     }
   }
 }
-.adm-list-item-content-arrow{
+.adm-list-item-content-arrow {
   margin-left: 0.25rem;
   font-size: 0.75rem;
 }
 .adm-card-header {
   padding: 0.5rem 0;
-  .adm-card-header-title{
+  .adm-card-header-title {
     width: 100%;
   }
 }
-.adm-dialog-content{
+.adm-dialog-content {
   padding: 0 1rem 1.25rem;
 }

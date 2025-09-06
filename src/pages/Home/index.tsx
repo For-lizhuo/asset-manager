@@ -6,13 +6,18 @@ import {
   MoreOutline,
   UploadOutline,
   DownlandOutline,
+  AppstoreOutline,
 } from "antd-mobile-icons";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "../../stores";
 import { useEffect, useState, useRef } from "react";
 import moment from "moment";
 import AssetPieChart from "../../components/AssetPieChart";
-import { exportDataToJSON, importDataFromJSON, clearAllData } from "../../db/dataExportImport";
+import {
+  exportDataToJSON,
+  importDataFromJSON,
+  clearAllData,
+} from "../../db/dataExportImport";
 import "./index.less";
 
 // 设置moment为中文
@@ -22,6 +27,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [showAmounts, setShowAmounts] = useState(true);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [holdingsVisible, setHoldingsVisible] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -84,31 +90,31 @@ const Home = () => {
   // 设置菜单选项
   const settingsActions = [
     {
-      text: '导出数据',
-      key: 'export',
+      text: "导出数据",
+      key: "export",
       icon: <DownlandOutline />,
     },
     {
-      text: '导入数据',
-      key: 'import', 
+      text: "导入数据",
+      key: "import",
       icon: <UploadOutline />,
     },
     {
-      text: '取消',
-      key: 'cancel',
-      description: ''
-    }
+      text: "取消",
+      key: "cancel",
+      description: "",
+    },
   ];
 
   // 处理设置菜单点击
   const handleSettingsAction = (action: { key: string | number }) => {
     setSettingsVisible(false);
-    
+
     switch (action.key) {
-      case 'export':
+      case "export":
         handleExportData();
         break;
-      case 'import':
+      case "import":
         handleImportData();
         break;
       default:
@@ -121,13 +127,13 @@ const Home = () => {
     try {
       await exportDataToJSON();
       Toast.show({
-        content: '数据导出成功',
-        position: 'center'
+        content: "数据导出成功",
+        position: "center",
       });
     } catch (error) {
       Toast.show({
-        content: error instanceof Error ? error.message : '导出失败',
-        position: 'center'
+        content: error instanceof Error ? error.message : "导出失败",
+        position: "center",
       });
     }
   };
@@ -136,10 +142,10 @@ const Home = () => {
   const handleImportData = () => {
     if (assets.length > 0 || holdings.length > 0) {
       Dialog.confirm({
-        content: '导入数据将会替换当前所有数据，是否继续？',
+        content: "导入数据将会替换当前所有数据，是否继续？",
         onConfirm: () => {
           fileInputRef.current?.click();
-        }
+        },
       });
     } else {
       fileInputRef.current?.click();
@@ -147,42 +153,44 @@ const Home = () => {
   };
 
   // 处理文件选择
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       Toast.show({
-        content: '正在导入数据...',
-        position: 'center',
-        duration: 0
+        content: "正在导入数据...",
+        position: "center",
+        duration: 0,
       });
 
       // 清空现有数据
       await clearAllData();
-      
+
       // 导入新数据
       const result = await importDataFromJSON(file);
-      
+
       // 重新加载数据
       await reloadData();
-      
+
       Toast.clear();
       Toast.show({
         content: `导入成功：${result.assets} 个资产，${result.holdings} 个持仓`,
-        position: 'center'
+        position: "center",
       });
     } catch (error) {
       Toast.clear();
       Toast.show({
-        content: error instanceof Error ? error.message : '导入失败',
-        position: 'center'
+        content: error instanceof Error ? error.message : "导入失败",
+        position: "center",
       });
     }
-    
+
     // 清空文件输入
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -243,21 +251,21 @@ const Home = () => {
             }}
           >
             <span>资产清单</span>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "1rem",
-                cursor: "pointer",
-                padding: "0.25rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              onClick={() => navigate("/add-asset")}
-            >
-              <AddCircleOutline />
-            </button>
+            <div className="asset-list-header-button-container">
+              <button
+                className="asset-list-header-button"
+                onClick={() => setHoldingsVisible((prev) => !prev)}
+                style={{ color: holdingsVisible ? "#1677ff" : "" }}
+              >
+                <AppstoreOutline />
+              </button>
+              <button
+                className="asset-list-header-button"
+                onClick={() => navigate("/add-asset")}
+              >
+                <AddCircleOutline />
+              </button>
+            </div>
           </div>
         }
         className="asset-list-card"
@@ -293,7 +301,7 @@ const Home = () => {
                       <div className="asset-header">
                         <div className="asset-info">
                           <div className="asset-title-row">
-                            <h3 style={{color: "#1677ff"}}>{asset.name}</h3>
+                            <h3 style={{ color: "#1677ff" }}>{asset.name}</h3>
                             <div className="progress-text">
                               <span
                                 className="text-sm"
@@ -338,64 +346,68 @@ const Home = () => {
                     </div>
 
                     {/* 持仓列表 */}
-                    {assetHoldings.length > 0 ? (
-                      <div className="holdings-section">
-                        <List className="holdings-list">
-                          {assetHoldings.map((holding) => (
-                            <List.Item
-                              key={holding.id}
-                              clickable
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/edit-holding/${holding.id}`);
-                              }}
-                              extra={
-                                <div
-                                  style={{
-                                    fontWeight: "bold",
-                                    fontSize: "0.9rem",
-                                    color: "#dc2626",
+                    {holdingsVisible && (
+                      <>
+                        {assetHoldings.length > 0 ? (
+                          <div className="holdings-section">
+                            <List className="holdings-list">
+                              {assetHoldings.map((holding) => (
+                                <List.Item
+                                  key={holding.id}
+                                  clickable
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/edit-holding/${holding.id}`);
                                   }}
+                                  extra={
+                                    <div
+                                      style={{
+                                        fontWeight: "bold",
+                                        fontSize: "0.9rem",
+                                        color: "#dc2626",
+                                      }}
+                                    >
+                                      {formatCurrency(holding.amount)}
+                                    </div>
+                                  }
                                 >
-                                  {formatCurrency(holding.amount)}
-                                </div>
-                              }
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: "4px",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    fontWeight: "600",
-                                    color: "#374151",
-                                    fontSize: "0.9rem",
-                                  }}
-                                >
-                                  {holding.name}
-                                </div>
-                                {holding.code && (
                                   <div
                                     style={{
-                                      fontSize: "0.75rem",
-                                      color: "#9ca3af",
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      gap: "4px",
                                     }}
                                   >
-                                    {holding.code}
+                                    <div
+                                      style={{
+                                        fontWeight: "600",
+                                        color: "#374151",
+                                        fontSize: "0.9rem",
+                                      }}
+                                    >
+                                      {holding.name}
+                                    </div>
+                                    {holding.code && (
+                                      <div
+                                        style={{
+                                          fontSize: "0.75rem",
+                                          color: "#9ca3af",
+                                        }}
+                                      >
+                                        {holding.code}
+                                      </div>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                            </List.Item>
-                          ))}
-                        </List>
-                      </div>
-                    ) : (
-                      <div className="empty-holdings">
-                        <div className="empty-text">暂无持仓</div>
-                      </div>
+                                </List.Item>
+                              ))}
+                            </List>
+                          </div>
+                        ) : (
+                          <div className="empty-holdings">
+                            <div className="empty-text">暂无持仓</div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </Card>
                 );
@@ -407,24 +419,24 @@ const Home = () => {
       {/* 悬浮设置按钮 */}
       <div
         style={{
-          position: 'fixed',
-          right: '1.5rem',
-          bottom: '3rem', // 避免与底部导航重叠
-          width: '2rem',
-          height: '2rem',
-          borderRadius: '50%',
-          backgroundColor: '#1677ff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 12px rgba(22, 119, 255, 0.3)',
-          cursor: 'pointer',
+          position: "fixed",
+          right: "1.5rem",
+          bottom: "3rem", // 避免与底部导航重叠
+          width: "2rem",
+          height: "2rem",
+          borderRadius: "50%",
+          backgroundColor: "#1677ff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 12px rgba(22, 119, 255, 0.3)",
+          cursor: "pointer",
           zIndex: 1000,
-          transition: 'all 0.2s ease'
+          transition: "all 0.2s ease",
         }}
         onClick={() => setSettingsVisible(true)}
       >
-        <MoreOutline style={{ fontSize: '24px', color: 'white' }} />
+        <MoreOutline style={{ fontSize: "24px", color: "white" }} />
       </div>
 
       {/* 设置操作菜单 */}
@@ -440,7 +452,7 @@ const Home = () => {
         ref={fileInputRef}
         type="file"
         accept=".json"
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
         onChange={handleFileSelect}
       />
     </div>
