@@ -1,14 +1,8 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { TabBar } from 'antd-mobile'
-import {
-  AppOutline,
-  AddOutline,
-} from 'antd-mobile-icons'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useAppStore } from '../stores'
 import { useEffect } from 'react'
 
 const Layout = () => {
-  const navigate = useNavigate()
   const location = useLocation()
   const { setCurrentPage } = useAppStore()
 
