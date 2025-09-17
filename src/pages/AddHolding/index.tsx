@@ -6,15 +6,17 @@ import {
   Button, 
   NavBar,
   Toast,
-  Selector
+  Selector,
+  Modal
 } from 'antd-mobile'
+import { DeleteOutline } from 'antd-mobile-icons'
 import { useAppStore } from '../../stores'
 import './index.less'
 
 const AddHolding = () => {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { addHolding, updateHolding, assets, holdings } = useAppStore()
+  const { addHolding, updateHolding, deleteHolding, assets, holdings } = useAppStore()
   const [loading, setLoading] = useState(false)
   const [form] = Form.useForm()
   
@@ -58,6 +60,27 @@ const AddHolding = () => {
         </div>
       </div>
     )
+  }
+
+  const handleDelete = async () => {
+    if (!existingHolding) return
+    
+    Modal.confirm({
+      title: '确认删除',
+      content: `确定要删除持仓"${existingHolding.name}"吗？`,
+      confirmText: '删除',
+      cancelText: '取消',
+      onConfirm: async () => {
+        try {
+          await deleteHolding(existingHolding.id)
+          Toast.show('删除成功')
+          navigate('/')
+        } catch (error) {
+          console.error('Error deleting holding:', error)
+          Toast.show('删除失败，请重试')
+        }
+      }
+    })
   }
 
   const onFinish = async (values: {
@@ -107,7 +130,21 @@ const AddHolding = () => {
 
   return (
     <div className="container-mobile">
-      <NavBar onBack={() => navigate('/')}>
+      <NavBar 
+        onBack={() => navigate('/')}
+        right={
+          isEditMode && existingHolding ? (
+            <Button
+              fill="none"
+              size="middle"
+              color="danger"
+              onClick={handleDelete}
+            >
+              <DeleteOutline />
+            </Button>
+          ) : undefined
+        }
+      >
         {isEditMode ? '编辑持仓' : '添加持仓'}
       </NavBar>
 
