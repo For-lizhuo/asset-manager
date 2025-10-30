@@ -1,31 +1,32 @@
 # 资产管家 - 移动端资产管理系统
 
-一个基于React + TypeScript + Vite构建的移动端资产管理网站，使用现代化的技术栈提供优秀的用户体验。支持资产配置管理、持仓跟踪、数据导入导出等功能。
+一个基于 React + TypeScript + Vite 构建的移动端资产管理应用，帮助用户轻松管理各类投资资产。该应用提供了直观的资产概览、详细的资产配置管理、持仓跟踪以及便捷的数据导入导出功能。
 
 ## 🚀 技术栈
 
 - **前端框架**: React 18 + TypeScript
-- **构建工具**: Vite
+- **构建工具**: Vite 7
 - **UI组件库**: Ant Design Mobile 5.39.0
-- **状态管理**: Zustand
+- **状态管理**: Zustand 5.0.8
 - **路由管理**: React Router v7
 - **样式方案**: Less CSS 预处理器
 - **数据存储**: IndexedDB
+- **数据可视化**: ECharts 6.0.0
 - **代码规范**: ESLint + TypeScript ESLint
 
-## 📱 功能特性
+## 📱 核心功能
 
 ### 资产管理
 - 📊 **资产总览**: 实时显示总资产价值和分布图表
 - 📝 **资产配置**: 添加、编辑、删除资产类别，设置目标占比
 - 💰 **持仓管理**: 管理具体投资产品和持仓金额
 - 📈 **占比跟踪**: 实时计算实际占比与目标占比对比
-- 🔍 **智能搜索**: 按名称快速筛选资产和持仓
 
 ### 数据管理
 - 📤 **数据导出**: 支持将资产和持仓数据导出为JSON文件
 - 📥 **数据导入**: 从JSON文件导入数据，支持数据迁移
 - 💾 **本地存储**: 使用IndexedDB进行数据持久化
+- ♻️ **数据迁移**: 自动从localStorage迁移旧数据
 
 ### UI/UX特性
 - 📱 **移动端优化**: 针对手机屏幕优化的界面设计
@@ -40,15 +41,9 @@
 src/
 ├── components/              # 公共组件
 │   ├── AssetPieChart/       # 资产分布饼图组件
-│   │   ├── index.tsx        # 组件实现
-│   │   └── index.less       # 组件样式
 │   └── Layout/              # 主布局组件
-│       ├── index.tsx        # 布局实现
-│       └── index.less       # 布局样式
 ├── pages/                   # 页面组件
 │   ├── Home/                # 首页（资产概览）
-│   │   ├── index.tsx        # 页面实现
-│   │   └── index.less       # 页面样式
 │   ├── AddAsset/            # 添加资产页面
 │   ├── AddHolding/          # 添加持仓页面
 │   ├── AssetDetail/         # 资产详情页面
@@ -57,14 +52,13 @@ src/
 │   ├── indexedDB.ts         # IndexedDB操作封装
 │   └── dataExportImport.ts  # 数据导入导出功能
 ├── stores/                  # 状态管理
-│   └── useAppStore.ts       # Zustand全局状态
+│   └── index.ts             # Zustand全局状态
 ├── router/                  # 路由配置
 │   └── index.tsx            # 路由定义
-├── styles/                  # 全局样式
-│   └── global.less          # 全局Less样式
 ├── App.tsx                  # 应用入口
 ├── main.tsx                 # 渲染入口
-└── index.css                # 样式入口
+├── index.css                # 样式入口
+└── vite-env.d.ts           # 类型声明文件
 ```
 
 ## 🛠️ 开发指南
@@ -97,7 +91,8 @@ src/
 
 ### 开发配置
 
-- **开发服务器**: http://localhost:5173
+- **开发服务器**: http://localhost:3000
+- **基础路径**: /asset-manager/
 - **移动端调试**: 服务器已配置host=true，可通过局域网IP访问
 - **热重载**: 支持组件热重载，修改代码即时生效
 
@@ -127,24 +122,16 @@ src/
 - **Less CSS**: CSS预处理器，支持变量、嵌套、混合等特性
 - **模块化样式**: 每个组件都有独立的样式文件
 - **移动端适配**: 响应式设计，针对移动端优化
-- **组件样式**: 统一的组件样式规范（index.tsx + index.less）
-- **全局样式**: 通用工具类和基础样式定义
-
-### 样式规范
-- 组件样式文件：`src/components/ComponentName/index.less`
-- 页面样式文件：`src/pages/PageName/index.less`
-- 全局样式文件：`src/styles/global.less`
 
 ## 📝 开发规范
 
 ### 文件结构规范
-- **组件文件夹**: 每个组件包含 `index.tsx` 和 `index.less` 两个文件
-- **页面文件夹**: 每个页面包含 `index.tsx` 和 `index.less` 两个文件
-- **数据库逻辑**: 所有数据库相关逻辑放在 `db/` 文件夹下
+- **组件文件夹**: 每个组件包含 `index.tsx` 和样式文件
+- **页面文件夹**: 每个页面包含 `index.tsx` 和样式文件
+- **数据库逻辑**: 所有数据库相关逻辑放在 [db/](/asset-manager/src/db) 文件夹下
 
 ### 代码规范
 - **组件命名**: PascalCase
-- **文件命名**: index.tsx（组件入口）、index.less（样式文件）
 - **类型定义**: 使用TypeScript接口定义数据模型
 - **ID生成**: 使用UUID确保唯一性
 - **占比显示**: 使用Math.round()将占比四舍五入为整数
@@ -167,8 +154,15 @@ interface Holding {
   code?: string         // 产品代码（可选）
   assetId: string       // 归属资产ID
   amount: number        // 持仓金额
+  institutionDetails: InstitutionDetail[] // 机构明细
   createdAt: string
   updatedAt: string
+}
+
+// 机构明细模型
+interface InstitutionDetail {
+  institution: string   // 机构名称
+  amount: number        // 金额
 }
 ```
 
@@ -178,6 +172,7 @@ interface Holding {
 - `tsconfig.json`: TypeScript配置
 - `eslint.config.js`: ESLint规则配置
 - `package.json`: 项目依赖和脚本配置
+- `config.ts`: 项目基础路径配置
 
 ## 💾 数据存储
 
@@ -201,20 +196,18 @@ interface Holding {
 - **数据可视化**: 移动端优化的ECharts图表展示
 - **弹窗交互**: ActionSheet、Dialog等移动端友好的交互组件
 
-## 🚀 部署建议
+## 🚀 部署说明
 
-1. **构建优化**: 使用`npm run build`生成优化后的静态文件
-2. **静态部署**: 推荐部署到Vercel、Netlify等静态托管平台
-3. **移动端测试**: 建议在真机上测试用户体验
-4. **性能监控**: 关注首屏加载时间和交互响应速度
+1. **构建项目**
+   ```bash
+   npm run build
+   ```
 
-## 🔮 未来规划
+2. **部署输出**
+   构建完成后，生成的静态文件位于 `dist` 目录中，可以部署到任何静态文件服务器。
 
-- 🌓 **深色模式**: 支持系统主题切换
-- 📱 **PWA支持**: 添加离线访问和应用安装功能
-- 📊 **更多图表**: 支持趋势图、对比图等数据可视化
-- 🔔 **提醒功能**: 资产配置偏离提醒
-- 🔐 **数据加密**: 本地数据加密存储
+3. **基础路径**
+   项目配置了基础路径 `/asset-manager/`，如需更改，请修改 [config.ts](file:///e:/desktop/web/asset-manager/config.ts) 文件中的 `rootPath` 变量，并相应调整 [vite.config.ts](file:///e:/desktop/web/asset-manager/vite.config.ts) 中的配置。
 
 ## 📄 许可证
 

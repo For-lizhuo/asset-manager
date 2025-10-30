@@ -7,12 +7,20 @@ interface Asset {
   updatedAt: string
 }
 
+// 定义机构明细接口
+export interface InstitutionDetail {
+  institution: string
+  amount: number
+}
+
 interface Holding {
   id: string
   name: string
   code?: string
   assetId: string
   amount: number
+  // 添加分布明细字段
+  institutionDetails: InstitutionDetail[]
   createdAt: string
   updatedAt: string
 }
@@ -251,7 +259,9 @@ class AssetManagerDB {
             // 确保 assetId 是字符串格式
             const fixedHolding = {
               ...holding,
-              assetId: Array.isArray(holding.assetId) ? holding.assetId[0] : holding.assetId
+              assetId: Array.isArray(holding.assetId) ? holding.assetId[0] : holding.assetId,
+              // 添加默认的机构明细字段
+              institutionDetails: holding.institutionDetails || []
             }
             await this.addHolding(fixedHolding)
           } catch (error) {

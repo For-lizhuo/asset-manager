@@ -94,6 +94,22 @@ const validateImportData = (data: unknown): data is ExportData => {
         !holdingObj.createdAt || !holdingObj.updatedAt) {
       return false
     }
+    
+    // 验证 institutionDetails 字段（如果存在）
+    if (holdingObj.institutionDetails !== undefined) {
+      if (!Array.isArray(holdingObj.institutionDetails)) {
+        return false
+      }
+      
+      // 验证每个机构明细项
+      for (const detail of holdingObj.institutionDetails) {
+        if (!detail || typeof detail !== 'object') return false
+        const detailObj = detail as Record<string, unknown>
+        if (typeof detailObj.institution !== 'string' || typeof detailObj.amount !== 'number') {
+          return false
+        }
+      }
+    }
   }
   
   return true
