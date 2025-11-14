@@ -25,7 +25,7 @@ interface LabelParams {
 const AssetPieChart = ({ height = 280 }: PieChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null)
   const chartInstance = useRef<echarts.ECharts | null>(null)
-  const { assets, holdings, initialized, loading } = useAppStore()
+  const { assets, initialized, loading } = useAppStore()
   
   // 单独的状态来跟踪图表是否已准备好
   const [chartReady, setChartReady] = useState(false)
@@ -82,24 +82,28 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
       return
     }
 
+    // 确保 assets 存在
+    if (!assets) {
+      console.log('资产数据未定义')
+      return
+    }
+
     console.log('饼图数据更新:', { 
       assetsCount: assets.length, 
-      holdingsCount: holdings.length, 
       initialized,
       loading,
       chartReady
     })
 
-    // 计算每个资产的持仓金额和占比
+    // 计算每个资产的机构金额和占比
     const assetData = assets.map(asset => {
-      const assetHoldings = holdings.filter(holding => holding.assetId === asset.id)
-      const assetValue = assetHoldings.reduce((sum, holding) => sum + holding.amount, 0)
+      const assetValue = asset.institutions.reduce((sum, institution) => sum + institution.amount, 0)
       return {
         name: asset.name,
         value: assetValue,
         targetRatio: asset.targetRatio || 0
       }
-    }).filter(item => item.value > 0) // 只显示有持仓的资产
+    }).filter(item => item.value > 0) // 只显示有机构的资产
 
     const totalValue = assetData.reduce((sum, item) => sum + item.value, 0)
 
@@ -113,7 +117,7 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
           return `
             <div style="font-size: 14px;">
               <div style="font-weight: bold; margin-bottom: 4px;">${data.name}</div>
-              <div>持仓金额: ¥${data.value.toLocaleString()}</div>
+              <div>资产金额: ¥${data.value.toLocaleString()}</div>
               <div>实际占比: ${actualRatio}%</div>
               ${(data.targetRatio && data.targetRatio > 0) ? `<div>目标占比: ${data.targetRatio}%</div>` : ''}
             </div>
@@ -205,7 +209,7 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [assets, chartReady, holdings, initialized, loading])
+  }, [assets, chartReady, initialized, loading])
 
   // 加载状态
   if (loading || !initialized) {
@@ -223,6 +227,22 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
     )
   }
 
+  // 确保 assets 存在
+  if (!assets) {
+    return (
+      <div 
+        className="flex flex-col items-center justify-center text-gray-500 bg-gray-50 rounded-lg"
+        style={{ height }}
+      >
+        <div className="text-4xl mb-4">📊</div>
+        <div className="text-center">
+          <div className="font-semibold mb-2">暂无资产数据</div>
+          <div className="text-sm">请先添加资产和机构</div>
+        </div>
+      </div>
+    )
+  }
+
   if (assets.length === 0) {
     return (
       <div 
@@ -232,15 +252,18 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
         <div className="text-4xl mb-4">📊</div>
         <div className="text-center">
           <div className="font-semibold mb-2">暂无资产数据</div>
-          <div className="text-sm">请先添加资产和持仓</div>
+          <div className="text-sm">请先添加资产和机构</div>
         </div>
       </div>
     )
   }
 
-  const hasHoldings = holdings.some(holding => holding.amount > 0)
+  // 确保 assets 存在后再调用 some 方法
+  const hasInstitutions = assets && assets.some(asset => 
+    asset.institutions && asset.institutions.some(institution => institution.amount > 0)
+  )
   
-  if (!hasHoldings) {
+  if (!hasInstitutions) {
     return (
       <div 
         className="flex flex-col items-center justify-center text-gray-500 bg-gray-50 rounded-lg"
@@ -248,8 +271,8 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
       >
         <div className="text-4xl mb-4">📈</div>
         <div className="text-center">
-          <div className="font-semibold mb-2">暂无持仓数据</div>
-          <div className="text-sm">请添加持仓记录</div>
+          <div className="font-semibold mb-2">暂无机构数据</div>
+          <div className="text-sm">请添加机构记录</div>
         </div>
       </div>
     )

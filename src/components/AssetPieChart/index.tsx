@@ -25,7 +25,7 @@ interface LabelParams {
 const AssetPieChart = ({ height = 280 }: PieChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null)
   const chartInstance = useRef<echarts.ECharts | null>(null)
-  const { assets, holdings, initialized, loading } = useAppStore()
+  const { assets, initialized, loading } = useAppStore()
   
   // 单独的状态来跟踪图表是否已准备好
   const [chartReady, setChartReady] = useState(false)
@@ -84,7 +84,6 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
 
     console.log('饼图数据更新:', { 
       assetsCount: assets.length, 
-      holdingsCount: holdings.length, 
       initialized,
       loading,
       chartReady
@@ -92,8 +91,8 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
 
     // 计算每个资产的持仓金额和占比
     const assetData = assets.map(asset => {
-      const assetHoldings = holdings.filter(holding => holding.assetId === asset.id)
-      const assetValue = assetHoldings.reduce((sum, holding) => sum + holding.amount, 0)
+      // 从资产的 institutions 字段中计算总持仓金额
+      const assetValue = asset.institutions.reduce((sum, institution) => sum + institution.amount, 0)
       return {
         name: asset.name,
         value: assetValue,
@@ -205,7 +204,7 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [assets, chartReady, holdings, initialized, loading])
+  }, [assets, chartReady, initialized, loading])
 
   // 加载状态
   if (loading || !initialized) {
@@ -223,22 +222,12 @@ const AssetPieChart = ({ height = 280 }: PieChartProps) => {
     )
   }
 
-  if (assets.length === 0) {
-    return (
-      <div 
-        className="flex flex-col items-center justify-center text-gray-500 bg-gray-50 rounded-lg"
-        style={{ height }}
-      >
-        <div className="text-4xl mb-4">📊</div>
-        <div className="text-center">
-          <div className="font-semibold mb-2">暂无资产数据</div>
-          <div className="text-sm">请先添加资产和持仓</div>
-        </div>
-      </div>
-    )
-  }
-
-  const hasHoldings = holdings.some(holding => holding.amount > 0)
+  // 检查是否有资产包含持仓数据
+  const hasHoldings = assets.some(asset => 
+    asset.institutions && 
+    asset.institutions.length > 0 && 
+    asset.institutions.some(inst => inst.amount > 0)
+  )
   
   if (!hasHoldings) {
     return (

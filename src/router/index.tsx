@@ -4,7 +4,6 @@ import Home from "../pages/Home";
 import AssetDetail from "../pages/AssetDetail";
 import AddAsset from "../pages/AddAsset";
 import EditAsset from "../pages/EditAsset";
-import AddHolding from "../pages/AddHolding";
 import { rootPath } from "../../config";
 
 export const router = createBrowserRouter(
@@ -28,14 +27,6 @@ export const router = createBrowserRouter(
         {
           path: "edit-asset/:id",
           element: <EditAsset />,
-        },
-        {
-          path: "add-holding",
-          element: <AddHolding />,
-        },
-        {
-          path: "edit-holding/:id",
-          element: <AddHolding />,
         },
       ],
     },

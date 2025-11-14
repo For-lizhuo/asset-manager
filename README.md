@@ -1,6 +1,6 @@
 # 资产管家 - 移动端资产管理系统
 
-一个基于 React + TypeScript + Vite 构建的移动端资产管理应用，帮助用户轻松管理各类投资资产。该应用提供了直观的资产概览、详细的资产配置管理、持仓跟踪以及便捷的数据导入导出功能。
+一个基于 React + TypeScript + Vite 构建的移动端资产管理应用，帮助用户轻松管理各类投资资产。该应用提供了直观的资产概览、详细的资产配置管理、机构信息跟踪以及便捷的数据导入导出功能。
 
 ## 🚀 技术栈
 
@@ -19,11 +19,11 @@
 ### 资产管理
 - 📊 **资产总览**: 实时显示总资产价值和分布图表
 - 📝 **资产配置**: 添加、编辑、删除资产类别，设置目标占比
-- 💰 **持仓管理**: 管理具体投资产品和持仓金额
+- 🏦 **机构管理**: 直接在资产中管理相关机构及金额
 - 📈 **占比跟踪**: 实时计算实际占比与目标占比对比
 
 ### 数据管理
-- 📤 **数据导出**: 支持将资产和持仓数据导出为JSON文件
+- 📤 **数据导出**: 支持将资产和机构数据导出为JSON文件
 - 📥 **数据导入**: 从JSON文件导入数据，支持数据迁移
 - 💾 **本地存储**: 使用IndexedDB进行数据持久化
 - ♻️ **数据迁移**: 自动从localStorage迁移旧数据
@@ -45,7 +45,6 @@ src/
 ├── pages/                   # 页面组件
 │   ├── Home/                # 首页（资产概览）
 │   ├── AddAsset/            # 添加资产页面
-│   ├── AddHolding/          # 添加持仓页面
 │   ├── AssetDetail/         # 资产详情页面
 │   └── EditAsset/           # 编辑资产页面
 ├── db/                      # 数据库相关
@@ -101,8 +100,7 @@ src/
 使用Zustand进行轻量级状态管理，主要状态包括：
 
 ### 数据状态
-- **assets**: 资产列表（名称、目标占比等）
-- **holdings**: 持仓列表（产品名称、代码、金额、归属资产等）
+- **assets**: 资产列表（名称、目标占比、机构信息等）
 - **totalAssetValue**: 总资产价值（实时计算）
 
 ### UI状态
@@ -112,7 +110,6 @@ src/
 
 ### 操作方法
 - **资产操作**: addAsset、updateAsset、deleteAsset
-- **持仓操作**: addHolding、updateHolding、deleteHolding
 - **数据管理**: initializeApp、reloadData、calculateTotalValue
 
 数据通过IndexedDB持久化保存，应用启动时自动从localStorage迁移旧数据。
@@ -143,18 +140,7 @@ interface Asset {
   id: string
   name: string
   targetRatio?: number  // 目标占比（0-100整数）
-  createdAt: string
-  updatedAt: string
-}
-
-// 持仓模型
-interface Holding {
-  id: string
-  name: string
-  code?: string         // 产品代码（可选）
-  assetId: string       // 归属资产ID
-  amount: number        // 持仓金额
-  institutionDetails: InstitutionDetail[] // 机构明细
+  institutions: InstitutionDetail[] // 机构明细
   createdAt: string
   updatedAt: string
 }
@@ -177,8 +163,7 @@ interface InstitutionDetail {
 ## 💾 数据存储
 
 ### IndexedDB 数据库
-- **assets表**: 存储资产信息
-- **holdings表**: 存储持仓信息
+- **assets表**: 存储资产信息（包含机构信息）
 - **自动迁移**: 应用启动时自动从localStorage迁移数据
 - **CRUD操作**: 完整的增删改查功能封装
 

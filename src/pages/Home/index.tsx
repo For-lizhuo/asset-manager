@@ -27,7 +27,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [showAmounts, setShowAmounts] = useState(true);
   const [settingsVisible, setSettingsVisible] = useState(false);
-  const [holdingsVisible, setHoldingsVisible] = useState(false);
+  const [institutionsVisible, setInstitutionsVisible] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -36,7 +36,6 @@ const Home = () => {
     initializeApp,
     initialized,
     assets,
-    holdings,
     reloadData,
   } = useAppStore();
 
@@ -67,17 +66,18 @@ const Home = () => {
     setShowAmounts(!showAmounts);
   };
 
-  // 获取资产的持仓信息（按金额从大到小排序）
-  const getAssetHoldings = (assetId: string) => {
-    return holdings
-      .filter((holding) => holding.assetId === assetId)
-      .sort((a, b) => b.amount - a.amount); // 按持仓金额从大到小排序
+  // 获取资产的机构信息（按金额从大到小排序）
+  const getAssetInstitutions = (assetId: string) => {
+    const asset = assets.find(a => a.id === assetId);
+    if (!asset) return [];
+    return asset.institutions.sort((a, b) => b.amount - a.amount); // 按金额从大到小排序
   };
 
   // 计算资产总金额
   const getAssetTotalValue = (assetId: string) => {
-    const assetHoldings = getAssetHoldings(assetId);
-    return assetHoldings.reduce((sum, holding) => sum + holding.amount, 0);
+    const asset = assets.find(a => a.id === assetId);
+    if (!asset) return 0;
+    return asset.institutions.reduce((sum, institution) => sum + institution.amount, 0);
   };
 
   // 计算实际占比（整数）
@@ -140,7 +140,7 @@ const Home = () => {
 
   // 导入数据
   const handleImportData = () => {
-    if (assets.length > 0 || holdings.length > 0) {
+    if (assets.length > 0) {
       Dialog.confirm({
         content: "导入数据将会替换当前所有数据，是否继续？",
         onConfirm: () => {
@@ -177,7 +177,7 @@ const Home = () => {
 
       Toast.clear();
       Toast.show({
-        content: `导入成功：${result.assets} 个资产，${result.holdings} 个持仓`,
+        content: `导入成功：${result.assets} 个资产`,
         position: "center",
       });
     } catch (error) {
@@ -254,8 +254,8 @@ const Home = () => {
             <div className="asset-list-header-button-container">
               <button
                 className="asset-list-header-button"
-                onClick={() => setHoldingsVisible((prev) => !prev)}
-                style={{ color: holdingsVisible ? "#1677ff" : "" }}
+                onClick={() => setInstitutionsVisible((prev) => !prev)}
+                style={{ color: institutionsVisible ? "#1677ff" : "" }}
               >
                 <AppstoreOutline />
               </button>
@@ -279,17 +279,17 @@ const Home = () => {
           <div className="asset-cards-container">
             {assets
               .map((asset) => {
-                const assetHoldings = getAssetHoldings(asset.id);
+                const assetInstitutions = getAssetInstitutions(asset.id);
                 const assetTotalValue = getAssetTotalValue(asset.id);
                 return {
                   asset,
-                  assetHoldings,
+                  assetInstitutions,
                   assetTotalValue,
                   actualRatio: getActualRatio(assetTotalValue),
                 };
               })
               .sort((a, b) => b.assetTotalValue - a.assetTotalValue) // 按资产总金额从大到小排序
-              .map(({ asset, assetHoldings, assetTotalValue, actualRatio }) => {
+              .map(({ asset, assetInstitutions, assetTotalValue, actualRatio }) => {
                 return (
                   <Card
                     key={asset.id}
@@ -345,20 +345,15 @@ const Home = () => {
                       </div>
                     </div>
 
-                    {/* 持仓列表 */}
-                    {holdingsVisible && (
+                    {/* 机构列表 */}
+                    {institutionsVisible && (
                       <>
-                        {assetHoldings.length > 0 ? (
+                        {assetInstitutions.length > 0 ? (
                           <div className="holdings-section">
                             <List className="holdings-list">
-                              {assetHoldings.map((holding) => (
+                              {assetInstitutions.map((institution, index) => (
                                 <List.Item
-                                  key={holding.id}
-                                  clickable
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/edit-holding/${holding.id}`);
-                                  }}
+                                  key={index}
                                   extra={
                                     <div
                                       style={{
@@ -367,7 +362,7 @@ const Home = () => {
                                         color: "#dc2626",
                                       }}
                                     >
-                                      {formatCurrency(holding.amount)}
+                                      {formatCurrency(institution.amount)}
                                     </div>
                                   }
                                 >
@@ -385,18 +380,8 @@ const Home = () => {
                                         fontSize: "0.9rem",
                                       }}
                                     >
-                                      {holding.name}
+                                      {institution.institution}
                                     </div>
-                                    {holding.code && (
-                                      <div
-                                        style={{
-                                          fontSize: "0.75rem",
-                                          color: "#9ca3af",
-                                        }}
-                                      >
-                                        {holding.code}
-                                      </div>
-                                    )}
                                   </div>
                                 </List.Item>
                               ))}
@@ -404,7 +389,7 @@ const Home = () => {
                           </div>
                         ) : (
                           <div className="empty-holdings">
-                            <div className="empty-text">暂无持仓</div>
+                            <div className="empty-text">暂无机构</div>
                           </div>
                         )}
                       </>

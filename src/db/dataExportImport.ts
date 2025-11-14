@@ -1,14 +1,12 @@
-import { assetManagerDB, type Asset, type Holding } from './indexedDB'
+import { assetManagerDB, type Asset } from './indexedDB'
 
 // 导出数据接口
 export interface ExportData {
   version: string
   exportDate: string
   assets: Asset[]
-  holdings: Holding[]
   totalCount: {
     assets: number
-    holdings: number
   }
 }
 
@@ -16,20 +14,15 @@ export interface ExportData {
 export const exportDataToJSON = async (): Promise<void> => {
   try {
     // 获取所有数据
-    const [assets, holdings] = await Promise.all([
-      assetManagerDB.getAllAssets(),
-      assetManagerDB.getAllHoldings()
-    ])
+    const assets = await assetManagerDB.getAllAssets()
 
     // 构建导出数据结构
     const exportData: ExportData = {
       version: '1.0.0',
       exportDate: new Date().toISOString(),
       assets,
-      holdings,
       totalCount: {
-        assets: assets.length,
-        holdings: holdings.length
+        assets: assets.length
       }
     }
 
@@ -72,10 +65,6 @@ const validateImportData = (data: unknown): data is ExportData => {
     return false
   }
   
-  if (!dataObj.holdings || !Array.isArray(dataObj.holdings)) {
-    return false
-  }
-  
   // 验证资产数据结构
   for (const asset of dataObj.assets) {
     if (!asset || typeof asset !== 'object') return false
@@ -83,29 +72,18 @@ const validateImportData = (data: unknown): data is ExportData => {
     if (!assetObj.id || !assetObj.name || !assetObj.createdAt || !assetObj.updatedAt) {
       return false
     }
-  }
-  
-  // 验证持仓数据结构
-  for (const holding of dataObj.holdings) {
-    if (!holding || typeof holding !== 'object') return false
-    const holdingObj = holding as Record<string, unknown>
-    if (!holdingObj.id || !holdingObj.name || !holdingObj.assetId || 
-        typeof holdingObj.amount !== 'number' || 
-        !holdingObj.createdAt || !holdingObj.updatedAt) {
-      return false
-    }
     
-    // 验证 institutionDetails 字段（如果存在）
-    if (holdingObj.institutionDetails !== undefined) {
-      if (!Array.isArray(holdingObj.institutionDetails)) {
+    // 验证 institutions 字段（如果存在）
+    if (assetObj.institutions !== undefined) {
+      if (!Array.isArray(assetObj.institutions)) {
         return false
       }
       
       // 验证每个机构明细项
-      for (const detail of holdingObj.institutionDetails) {
-        if (!detail || typeof detail !== 'object') return false
-        const detailObj = detail as Record<string, unknown>
-        if (typeof detailObj.institution !== 'string' || typeof detailObj.amount !== 'number') {
+      for (const institution of assetObj.institutions) {
+        if (!institution || typeof institution !== 'object') return false
+        const institutionObj = institution as Record<string, unknown>
+        if (typeof institutionObj.institution !== 'string' || typeof institutionObj.amount !== 'number') {
           return false
         }
       }
@@ -116,7 +94,7 @@ const validateImportData = (data: unknown): data is ExportData => {
 }
 
 // 从JSON文件导入数据
-export const importDataFromJSON = async (file: File): Promise<{ assets: number, holdings: number }> => {
+export const importDataFromJSON = async (file: File): Promise<{ assets: number }> => {
   try {
     // 读取文件内容
     const text = await file.text()
@@ -131,7 +109,6 @@ export const importDataFromJSON = async (file: File): Promise<{ assets: number, 
     console.log('开始导入数据...')
     
     let importedAssets = 0
-    let importedHoldings = 0
     
     // 导入资产数据
     for (const asset of data.assets) {
@@ -149,27 +126,10 @@ export const importDataFromJSON = async (file: File): Promise<{ assets: number, 
       }
     }
     
-    // 导入持仓数据
-    for (const holding of data.holdings) {
-      try {
-        await assetManagerDB.addHolding(holding)
-        importedHoldings++
-      } catch {
-        // 如果持仓已存在，尝试更新
-        try {
-          await assetManagerDB.updateHolding(holding)
-          importedHoldings++
-        } catch {
-          console.warn('无法导入持仓:', holding.name)
-        }
-      }
-    }
-    
-    console.log(`数据导入成功: ${importedAssets} 个资产, ${importedHoldings} 个持仓`)
+    console.log(`数据导入成功: ${importedAssets} 个资产`)
     
     return {
-      assets: importedAssets,
-      holdings: importedHoldings
+      assets: importedAssets
     }
   } catch (error) {
     console.error('导入数据失败:', error)
@@ -183,15 +143,7 @@ export const importDataFromJSON = async (file: File): Promise<{ assets: number, 
 // 清空所有数据（用于导入前清理）
 export const clearAllData = async (): Promise<void> => {
   try {
-    const [assets, holdings] = await Promise.all([
-      assetManagerDB.getAllAssets(),
-      assetManagerDB.getAllHoldings()
-    ])
-    
-    // 删除所有持仓
-    for (const holding of holdings) {
-      await assetManagerDB.deleteHolding(holding.id)
-    }
+    const assets = await assetManagerDB.getAllAssets()
     
     // 删除所有资产
     for (const asset of assets) {

@@ -1,16 +1,15 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Button, NavBar, Modal, Toast, List } from "antd-mobile";
-import { EditSOutline, DeleteOutline, AddOutline } from "antd-mobile-icons";
+import { EditSOutline, DeleteOutline } from "antd-mobile-icons";
 import { useAppStore } from "../../stores";
 import "./index.less";
 
 const AssetDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { assets, holdings, deleteAsset, totalAssetValue } = useAppStore();
+  const { assets, deleteAsset, totalAssetValue: globalTotalAssetValue } = useAppStore();
 
   const asset = assets.find((a) => a.id === id);
-  const assetHoldings = holdings.filter((h) => h.assetId === id).sort((a, b) => b.amount - a.amount); // 按持仓金额从大到小排序
 
   if (!asset) {
     return (
@@ -32,9 +31,9 @@ const AssetDetail = () => {
     );
   }
 
-  // 计算持仓总金额
-  const totalHoldingValue = assetHoldings.reduce(
-    (sum, holding) => sum + holding.amount,
+  // 计算资产总金额
+  const assetTotalValue = asset.institutions.reduce(
+    (sum, institution) => sum + institution.amount,
     0
   );
 
@@ -47,8 +46,8 @@ const AssetDetail = () => {
 
   // 计算实际占比
   const getActualRatio = () => {
-    return totalAssetValue > 0
-      ? Math.round((totalHoldingValue / totalAssetValue) * 100)
+    return globalTotalAssetValue > 0
+      ? Math.round((assetTotalValue / globalTotalAssetValue) * 100)
       : 0;
   };
 
@@ -57,7 +56,7 @@ const AssetDetail = () => {
   const handleDelete = async () => {
     Modal.confirm({
       title: "确认删除",
-      content: `确定要删除资产“${asset.name}”吗？此操作将同时删除所有相关持仓记录。`,
+      content: `确定要删除资产“${asset.name}”吗？此操作将同时删除所有相关机构记录。`,
       confirmText: "删除",
       cancelText: "取消",
       onConfirm: async () => {
@@ -82,13 +81,6 @@ const AssetDetail = () => {
             <Button
               size="middle"
               fill="none"
-              onClick={() => navigate("/add-holding")}
-            >
-              <AddOutline />
-            </Button>
-            <Button
-              fill="none"
-              size="middle"
               onClick={() => navigate(`/edit-asset/${asset.id}`)}
               style={{ padding: "0 0.25rem" }}
             >
@@ -152,7 +144,7 @@ const AssetDetail = () => {
           </div>
         </Card>
 
-        {/* 持仓统计 */}
+        {/* 资产统计 */}
         <Card className="mb-4" style={{ backgroundColor: "#f9fafb" }}>
           <div className="text-center py-4">
             <div
@@ -160,55 +152,46 @@ const AssetDetail = () => {
               style={{ justifyContent: "space-evenly" }}
             >
               <div>
-                <p className="text-sm text-gray-600 mb-1">持仓数量</p>
+                <p className="text-sm text-gray-600 mb-1">机构数量</p>
                 <p
                   className="text-xl"
                   style={{ fontWeight: "bold", color: "#3B82F6" }}
                 >
-                  {assetHoldings.length}个
+                  {asset.institutions.length}个
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">持仓总金额</p>
+                <p className="text-sm text-gray-600 mb-1">资产总金额</p>
                 <p
                   className="text-xl"
                   style={{ fontWeight: "bold", color: "#DC2626" }}
                 >
-                  {formatCurrency(totalHoldingValue)}
+                  {formatCurrency(assetTotalValue)}
                 </p>
               </div>
             </div>
           </div>
         </Card>
 
-        {/* 持仓列表 */}
+        {/* 机构列表 */}
         <Card
           title={
             <div className="flex justify-between items-center">
-              <span>持仓明细</span>
+              <span>机构明细</span>
             </div>
           }
           className="mb-4"
           style={{ backgroundColor: "#f9fafb" }}
         >
-          {assetHoldings.length === 0 ? (
+          {asset.institutions.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">还没有持仓记录</p>
-              <Button
-                color="primary"
-                size="small"
-                onClick={() => navigate("/add-holding")}
-              >
-                添加持仓
-              </Button>
+              <p className="text-gray-500 mb-4">还没有机构记录</p>
             </div>
           ) : (
             <List>
-              {assetHoldings.map((holding) => (
+              {asset.institutions.map((institution, index) => (
                 <List.Item
-                  key={holding.id}
-                  clickable
-                  onClick={() => navigate(`/edit-holding/${holding.id}`)}
+                  key={index}
                   extra={
                     <div className="text-right">
                       <div
@@ -218,7 +201,7 @@ const AssetDetail = () => {
                           color: "#DC2626",
                         }}
                       >
-                        {formatCurrency(holding.amount)}
+                        {formatCurrency(institution.amount)}
                       </div>
                     </div>
                   }
@@ -237,13 +220,8 @@ const AssetDetail = () => {
                         fontSize: "1rem",
                       }}
                     >
-                      {holding.name}
+                      {institution.institution}
                     </div>
-                    {holding.code && (
-                      <div className="text-sm text-gray-500">
-                        {holding.code}
-                      </div>
-                    )}
                   </div>
                 </List.Item>
               ))}

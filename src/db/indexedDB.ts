@@ -3,6 +3,8 @@ interface Asset {
   id: string
   name: string
   targetRatio?: number
+  // 直接在资产中存储机构信息
+  institutions: InstitutionDetail[]
   createdAt: string
   updatedAt: string
 }
@@ -13,21 +15,9 @@ export interface InstitutionDetail {
   amount: number
 }
 
-interface Holding {
-  id: string
-  name: string
-  code?: string
-  assetId: string
-  amount: number
-  // 添加分布明细字段
-  institutionDetails: InstitutionDetail[]
-  createdAt: string
-  updatedAt: string
-}
-
 class AssetManagerDB {
   private dbName = 'AssetManagerDB'
-  private version = 1
+  private version = 2 // 更新版本号
   private db: IDBDatabase | null = null
 
   async init(): Promise<void> {
@@ -53,12 +43,9 @@ class AssetManagerDB {
           assetStore.createIndex('createdAt', 'createdAt', { unique: false })
         }
 
-        // 创建持仓表
-        if (!db.objectStoreNames.contains('holdings')) {
-          const holdingStore = db.createObjectStore('holdings', { keyPath: 'id' })
-          holdingStore.createIndex('assetId', 'assetId', { unique: false })
-          holdingStore.createIndex('name', 'name', { unique: false })
-          holdingStore.createIndex('createdAt', 'createdAt', { unique: false })
+        // 删除持仓表（因为我们不再需要它）
+        if (db.objectStoreNames.contains('holdings')) {
+          db.deleteObjectStore('holdings')
         }
       }
     })
@@ -133,105 +120,6 @@ class AssetManagerDB {
     })
   }
 
-  // 持仓相关操作
-  async getAllHoldings(): Promise<Holding[]> {
-    return new Promise((resolve, reject) => {
-      const store = this.getStore('holdings')
-      const request = store.getAll()
-
-      request.onsuccess = () => {
-        resolve(request.result)
-      }
-
-      request.onerror = () => {
-        reject(new Error('Failed to get holdings'))
-      }
-    })
-  }
-
-  async getHoldingsByAssetId(assetId: string): Promise<Holding[]> {
-    return new Promise((resolve, reject) => {
-      const store = this.getStore('holdings')
-      const index = store.index('assetId')
-      const request = index.getAll(assetId)
-
-      request.onsuccess = () => {
-        resolve(request.result)
-      }
-
-      request.onerror = () => {
-        reject(new Error('Failed to get holdings by asset ID'))
-      }
-    })
-  }
-
-  async addHolding(holding: Holding): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const store = this.getStore('holdings', 'readwrite')
-      const request = store.add(holding)
-
-      request.onsuccess = () => {
-        resolve()
-      }
-
-      request.onerror = () => {
-        reject(new Error('Failed to add holding'))
-      }
-    })
-  }
-
-  async updateHolding(holding: Holding): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const store = this.getStore('holdings', 'readwrite')
-      const request = store.put(holding)
-
-      request.onsuccess = () => {
-        resolve()
-      }
-
-      request.onerror = () => {
-        reject(new Error('Failed to update holding'))
-      }
-    })
-  }
-
-  async deleteHolding(id: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const store = this.getStore('holdings', 'readwrite')
-      const request = store.delete(id)
-
-      request.onsuccess = () => {
-        resolve()
-      }
-
-      request.onerror = () => {
-        reject(new Error('Failed to delete holding'))
-      }
-    })
-  }
-
-  async deleteHoldingsByAssetId(assetId: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const store = this.getStore('holdings', 'readwrite')
-      const index = store.index('assetId')
-      const request = index.openCursor(IDBKeyRange.only(assetId))
-
-      request.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result
-        if (cursor) {
-          cursor.delete()
-          cursor.continue()
-        } else {
-          resolve()
-        }
-      }
-
-      request.onerror = () => {
-        reject(new Error('Failed to delete holdings by asset ID'))
-      }
-    })
-  }
-
   // 数据迁移：从 localStorage 迁移到 IndexedDB
   async migrateFromLocalStorage(): Promise<void> {
     try {
@@ -252,24 +140,7 @@ class AssetManagerDB {
         }
       }
 
-      // 迁移持仓数据
-      if (state.holdings && Array.isArray(state.holdings)) {
-        for (const holding of state.holdings) {
-          try {
-            // 确保 assetId 是字符串格式
-            const fixedHolding = {
-              ...holding,
-              assetId: Array.isArray(holding.assetId) ? holding.assetId[0] : holding.assetId,
-              // 添加默认的机构明细字段
-              institutionDetails: holding.institutionDetails || []
-            }
-            await this.addHolding(fixedHolding)
-          } catch (error) {
-            console.warn('Failed to migrate holding:', holding.id, error)
-          }
-        }
-      }
-
+      // 注意：不再迁移持仓数据，因为数据结构已更改
       console.log('Data migration from localStorage completed')
       
       // 清除 localStorage 中的旧数据
@@ -284,4 +155,4 @@ class AssetManagerDB {
 export const assetManagerDB = new AssetManagerDB()
 
 // 导出类型
-export type { Asset, Holding }
+export type { Asset }
