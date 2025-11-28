@@ -44,10 +44,10 @@ const AssetDetail = () => {
     }).format(amount);
   };
 
-  // 计算实际占比
+  // 计算实际占比（保留一位小数）
   const getActualRatio = () => {
     return globalTotalAssetValue > 0
-      ? Math.round((assetTotalValue / globalTotalAssetValue) * 100)
+      ? Number(((assetTotalValue / globalTotalAssetValue) * 100).toFixed(1))
       : 0;
   };
 
@@ -124,7 +124,7 @@ const AssetDetail = () => {
                     : "#DC2626",
               }}
             >
-              {actualRatio}%
+              {actualRatio.toFixed(1)}%
             </span>
             <span className="text-lg"> / </span>
             <span

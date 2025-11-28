@@ -80,10 +80,10 @@ const Home = () => {
     return asset.institutions.reduce((sum, institution) => sum + institution.amount, 0);
   };
 
-  // 计算实际占比（整数）
+  // 计算实际占比（保留一位小数）
   const getActualRatio = (assetValue: number) => {
     return totalAssetValue > 0
-      ? Math.round((assetValue / totalAssetValue) * 100)
+      ? Number(((assetValue / totalAssetValue) * 100).toFixed(1))
       : 0;
   };
 
@@ -313,7 +313,7 @@ const Home = () => {
                                       : "#DC2626",
                                 }}
                               >
-                                {actualRatio}%
+                                {actualRatio.toFixed(1)}%
                               </span>
                               <span className="text-sm"> / </span>
                               <span
@@ -322,6 +322,25 @@ const Home = () => {
                               >
                                 {asset.targetRatio}%
                               </span>
+                              {asset.targetRatio ? (
+                                (() => {
+                                  const ratioDifference = actualRatio - asset.targetRatio;
+                                  const amountDifference = (ratioDifference / 100) * totalAssetValue;
+                                  const formattedAmount = Math.abs(Math.round(amountDifference));
+                                  return (
+                                    <span 
+                                      className="text-sm" 
+                                      style={{ 
+                                        color: ratioDifference >= 0 ? '#DC2626' : '#10b981',
+                                        fontWeight: 'bold',
+                                        marginLeft: '4px'
+                                      }}
+                                    >
+                                      （{ratioDifference >= 0 ? '+' : '-'}{formattedAmount.toLocaleString()}）
+                                    </span>
+                                  );
+                                })()
+                              ) : null}
                             </div>
                           </div>
                         </div>
